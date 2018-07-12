@@ -4,6 +4,6 @@ WORKDIR ./
 COPY frontend/ ./
 
 RUN npm install && npm run build
-CMD "npm run dev"
+CMD "npm run prod"
 
 EXPOSE 8080
