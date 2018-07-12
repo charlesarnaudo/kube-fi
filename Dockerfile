@@ -1,10 +1,9 @@
-FROM golang
+FROM node
 
-WORKDIR /go/src/kube-fi
+WORKDIR ./
+COPY frontend/ ./
 
-COPY ./server.go .
-RUN go get ./...
-
-CMD ["kube-fi"]
+RUN npm install && npm run build
+CMD ["npm", "run", "prod"]
 
 EXPOSE 8080
