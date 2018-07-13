@@ -6,7 +6,7 @@ services:
   - docker
 
 script:
-  - docker build -t charlesarnaudo/kube-fi:latest .
+  - docker build -t $DOCKER_USERNAME/kube-fi:latest .
 
 deploy:
   provider: script
