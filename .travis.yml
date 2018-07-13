@@ -6,10 +6,13 @@ services:
   - docker
 
 script:
-  - docker build -t charlesarnaudo/kubefi:latest .
-  
+  - docker build -t charlesarnaudo/kube-fi:latest .
+
 deploy:
   provider: script
   script: bash docker_push.sh
   on:
     branch: master
+
+notifications:
+  email: false
