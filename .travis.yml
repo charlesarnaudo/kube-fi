@@ -5,8 +5,9 @@ language: generic
 services:
   - docker
 
-before_install:
+script:
   - docker build -t charlesarnaudo/kubefi:latest .
+  
 deploy:
   provider: script
   script: bash docker_push.sh
