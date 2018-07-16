@@ -24,4 +24,7 @@ kubectl create -f cluster-conf.yml
 
 # list ip of webapp deploy on local cluster
 minikube service list
+
+# Go to Kubernetes Dashboard
+minikube dashboard
 ```
