@@ -1,142 +1,113 @@
 <template>
-  <div>
-    <svg @mousemove="mouseover" :width="width" :height="height">
-    </svg>
-  </div>
+    <div>
+        <svg width=300px height=300px></svg>
+    </div>
 </template>
 
 <script>
-/* globals window, requestAnimationFrame */
-import * as d3 from 'd3';
-import TWEEN from 'tween';
-const props = {
-  data: {
-    type: Array,
-    default: () => [],
-  },
-  margin: {
-    type: Object,
-    default: () => ({
-      left: 0,
-      right: 0,
-      top: 10,
-      bottom: 10,
-    }),
-  },
-  ceil: {
-    type: Number,
-    default: 100,
-  },
-};
-export default {
-  name: 'area-chart',
-  props,
-  data() {
-    return {
-      width: 0,
-      height: 0,
-      paths: {
-        area: '',
-        line: '',
-        selector: '',
-      },
-      lastHoverPoint: {},
-      scaled: {
-        x: null,
-        y: null,
-      },
-      animatedData: [],
-      points: [],
-    };
-  },
-  computed: {
-    padded() {
-      const width = this.width - this.margin.left - this.margin.right;
-      const height = this.height - this.margin.top - this.margin.bottom;
-      return { width, height };
-    },
-  },
-  mounted() {
-    window.addEventListener('resize', this.onResize);
-    this.onResize();
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.onResize);
-  },
-  watch: {
-    data: function dataChanged(newData, oldData) {
-      this.tweenData(newData, oldData);
-    },
-    width: function widthChanged() {
-      this.initialize();
-      this.update();
-    },
-  },
-  methods: {
-    onResize() {
-      this.width = this.$el.offsetWidth;
-      this.height = this.$el.offsetHeight;
-    },
-    createArea: d3.area().x(d => d.x).y0(d => d.max).y1(d => d.y),
-    createLine: d3.line().x(d => d.x).y(d => d.y),
-    createValueSelector: d3.area().x(d => d.x).y0(d => d.max).y1(0),
-    initialize() {
-      this.scaled.x = d3.scaleLinear().range([0, this.padded.width]);
-      this.scaled.y = d3.scaleLinear().range([this.padded.height, 0]);
-      d3.axisLeft().scale(this.scaled.x);
-      d3.axisBottom().scale(this.scaled.y);
-    },
-    tweenData(newData, oldData) {
-      const vm = this;
-      function animate(time) {
-        requestAnimationFrame(animate);
-        TWEEN.update(time);
-      }
-      new TWEEN.Tween(oldData)
-        .easing(TWEEN.Easing.Quadratic.Out)
-        .to(newData, 500)
-        .onUpdate(function onUpdate() {
-          vm.animatedData = this;
-          vm.update();
-        })
-        .start();
-      animate();
-    },
-    update() {
-      this.scaled.x.domain(d3.extent(this.data, (d, i) => i));
-      this.scaled.y.domain([0, this.ceil]);
-      this.points = [];
-      for (const [i, d] of this.animatedData.entries()) {
-        this.points.push({
-          x: this.scaled.x(i),
-          y: this.scaled.y(d),
-          max: this.height,
+    import * as d3 from "d3";
+    var svg = d3.select("svg"),
+        width = 400,
+        height = 400;
+
+    var simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(function(d) { return d.id; }))
+        .force("charge", d3.forceManyBody().strength(-400))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+
+    d3.json("flare.json", function(error, graph) {
+        if (error) throw error;
+
+        graph.links.forEach(function(d){
+            d.source = d.source_id;
+            d.target = d.target_id;
         });
-      }
-      this.paths.area = this.createArea(this.points);
-      this.paths.line = this.createLine(this.points);
-    },
-    mouseover({ offsetX }) {
-      if (this.points.length > 0) {
-        const x = offsetX - this.margin.left;
-        const closestPoint = this.getClosestPoint(x);
-        if (this.lastHoverPoint.index !== closestPoint.index) {
-          const point = this.points[closestPoint.index];
-          this.paths.selector = this.createValueSelector([point]);
-          this.$emit('select', this.data[closestPoint.index]);
-          this.lastHoverPoint = closestPoint;
+
+        var link = svg.append("g")
+            .style("stroke", "#aaa")
+            .selectAll("line")
+            .data(graph.links)
+            .enter().append("line");
+
+        var node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("circle")
+            .data(graph.nodes)
+            .enter().append("circle")
+            .attr("r", 6)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        var label = svg.append("g")
+            .attr("class", "labels")
+            .selectAll("text")
+            .data(graph.nodes)
+            .enter().append("text")
+            .attr("class", "label")
+            .text(function(d) { return d.name; });
+
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", ticked);
+
+        simulation.force("link")
+            .links(graph.links);
+
+        function ticked() {
+            link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node
+                .attr("r", 20)
+                .style("fill", "#d9d9d9")
+                .style("stroke", "#969696")
+                .style("stroke-width", "1px")
+                .attr("cx", function (d) { return d.x+6; })
+                .attr("cy", function(d) { return d.y-6; });
+
+            label
+                .attr("x", function(d) { return d.x; })
+                .attr("y", function (d) { return d.y; })
+                .style("font-size", "20px").style("fill", "#4393c3");
         }
-      }
-    },
-    getClosestPoint(x) {
-      return this.points
-        .map((point, index) => ({ x:
-          point.x,
-          diff: Math.abs(point.x - x),
-          index,
-        }))
-        .reduce((memo, val) => (memo.diff < val.diff ? memo : val));
-    },
-  },
-};
+    });
+
+    function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart()
+        simulation.fix(d);
+    }
+
+    function dragged(d) {
+        simulation.fix(d, d3.event.x, d3.event.y);
+    }
+
+    function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        simulation.unfix(d);
+    }
 </script>
+
+<style>
+
+    .link {
+        stroke: #aaa;
+    }
+
+    .node text {
+        stroke: #333;
+        cursos: pointer;
+    }
+
+    .node circle {
+        stroke: #fff;
+        stroke-width: 3px;
+        fill: #555;
+    }
+
+</style>
