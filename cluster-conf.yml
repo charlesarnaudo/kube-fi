@@ -12,6 +12,7 @@ spec:
       containers:
       - image: charlesarnaudo/kube-fi
         name: kube-fi-webapp
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
 

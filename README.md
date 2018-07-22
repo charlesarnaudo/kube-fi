@@ -13,15 +13,24 @@ npm run dev
 npm run build
 ```
 
-## Local k8s deployment
+## Local build and deploy
 
 ``` bash
-# Bring up local k8s cluster
+# bring up local k8s cluster
 minikube start
+
+# use minikube docker env
+eval $(minikube docker-env)
+
+# build image (repeat when needed)
+docker build -t charlesarnaudo/kube-fi .
 
 # create deployment and service
 kubectl create -f cluster-conf.yml
 
 # list ip of webapp deploy on local cluster
 minikube service list
+
+# Go to Kubernetes Dashboard
+minikube dashboard
 ```
