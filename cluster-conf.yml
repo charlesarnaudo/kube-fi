@@ -14,7 +14,7 @@ spec:
         name: kube-fi-webapp
         imagePullPolicy: Never
         ports:
-        - containerPort: 8080
+        - containerPort: 80
 
 ---
 apiVersion: v1
@@ -25,8 +25,8 @@ spec:
   type: NodePort
   ports:
     - nodePort: 31317
-      port: 8080
+      port: 80
       protocol: TCP
-      targetPort: 8080
+      targetPort: 80
   selector:
     app: webapp
