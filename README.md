@@ -33,4 +33,14 @@ minikube service list
 
 # Go to Kubernetes Dashboard
 minikube dashboard
+
+## Build with included scripts
+
+# Setup environment
+bash setup_script.sh
+
+# Tear down running env
+bash teardown_script.sh
+
+
 ```
