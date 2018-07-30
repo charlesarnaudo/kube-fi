@@ -1,9 +1,9 @@
-FROM nginx
+FROM node
 
-RUN mkdir /etc/nginx/logs && touch /etc/nginx/logs/static.log
+WORKDIR ./
+COPY frontend/ ./
 
-ADD ./nginx.conf /etc/nginx/conf.d/default.conf
+RUN npm rebuild && npm install
+CMD ["node", "server.js"]
 
-ADD /frontend /www
-
-EXPOSE 80
+EXPOSE 8080
