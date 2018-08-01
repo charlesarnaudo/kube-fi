@@ -1,27 +1,32 @@
 // Express dep
 var express = require('express');
 var request = require('request');
+var os = require('os');
 
 
 const Client = require('kubernetes-client').Client;
 const config = require('kubernetes-client').config;
-const client = new Client({ config: config.getInCluster() });
+const client = new Client({config: config.getInCluster()});
 client.loadSpec();
 var app = express();
 
 // Where we serve our static files
 app.use(express.static('public'));
 
-// index router
 app.get('/', function (req, res) {
     res.send('Hello World');
 });
 
-// API routes
+
 app.get('/getPods', async function (req, res) {
-    const namespaces = await client.api.v1.pods.get();
-    console.log(namespaces)
-    res.send('Got pods!');
+
+    var pod_list = [];
+    const pods = await client.api.v1.namespace('default').pods.get();
+    pods.body.items.forEach((item) => {
+        pod_list.push(item.metadata);
+    });
+
+    res.send(pod_list);
 });
 
 
