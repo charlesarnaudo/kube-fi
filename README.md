@@ -71,4 +71,4 @@ minikube dashboard
     sudo kubeadm reset && sudo rm -rf ~/.kube && sudo systemctl daemon-reload && sudo systemctl restart docker && sudo systemctl restart kubelet
 
 #### Current Join Command
-    kubeadm join --token c53c9d.e65eeadaf2650a45 192.168.1.139:6443 --discovery-token-ca-cert-hash sha256:8d4f7a6b7f5f98db03284959fd6cf2ccd65abe5203ca1610cadc7f50e3195cd0
+    kubeadm join --token 995436.a7289a53acb65e22 192.168.1.139:6443 --discovery-token-ca-cert-hash sha256:a186e3e9cef346a40aed117d016f5fdd2dbde213ce910629bc8773ca3771e769
