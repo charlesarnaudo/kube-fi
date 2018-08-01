@@ -1,4 +1,4 @@
-FROM node
+FROM hypriot/rpi-node
 
 WORKDIR ./
 COPY frontend/ ./

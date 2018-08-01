@@ -36,7 +36,7 @@ minikube dashboard
 
 ```
 
-## Cluster installation
+## Cluster configuration
 ### Configuration
 #### All Nodes
     curl -sSL get.docker.com | sh && sudo usermod pi -aG docker
@@ -54,13 +54,21 @@ minikube dashboard
     sudo apt-get update -q &&
     sudo apt-get install -qy kubelet=1.9.7-00 kubectl=1.9.7-00 kubeadm=1.9.7-00
 
+    kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
 #### Master Node Only
     sudo sed -i '/KUBELET_NETWORK_ARGS=/d' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
     sudo kubeadm init --token-ttl=0 --apiserver-advertise-address=192.168.1.139 --ignore-preflight-errors=ALL
+
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
     kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
 #### Reset between attempts
-    kubeadm reset && sudo rm -rf ~/.kube && sudo systemctl daemon-reload && sudo systemctl restart docker && sudo systemctl restart kubelet sudo reboot
+    sudo kubeadm reset && sudo rm -rf ~/.kube && sudo systemctl daemon-reload && sudo systemctl restart docker && sudo systemctl restart kubelet
 
 #### Current Join Command
-    kubeadm join --token 529788.d483f5bc90822df1 192.168.1.139:6443 --discovery-token-ca-cert-hash sha256:5b1ee616e0f7cbed2413796a99c2737dbc0ec68c45bf251fb6d309fde4a16a0a
+    kubeadm join --token 995436.a7289a53acb65e22 192.168.1.139:6443 --discovery-token-ca-cert-hash sha256:a186e3e9cef346a40aed117d016f5fdd2dbde213ce910629bc8773ca3771e769
